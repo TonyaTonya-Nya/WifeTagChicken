@@ -19,14 +19,13 @@ yt_client = googleapiclient.discovery.build(
 bot = commands.Bot(command_prefix="$")
 ydl_opts = {
     "quiet": True,
-    "extract_flat": True,
-    "format": "best",
     "hls_use_mpegts": True,
-    "outtmpl": "video/%(title)s",
+    "live_from_start": True,
+    "outtmpl": "./video/%(title)s"
 }
 
 ydl = yt_dlp.YoutubeDL(ydl_opts)
-session = aiohttp.ClientSession()
+
 
 # 正則表達式
 re_syt = re.compile(r"https://youtu.be/([^ &#\n\?]+)", re.ASCII)
@@ -47,6 +46,7 @@ async def get_tags(title: str):
     """
     透過資料庫查詢是否有相關的字詞
     """
+    session = aiohttp.ClientSession()
     if title:
         async with session.post(
             jdata["DataBase"], params={"method": "readTag", "query": title}
@@ -58,7 +58,7 @@ async def get_tags(title: str):
                 unique_words = list(set(words))
 
                 return " ".join(unique_words) or "找不到，你確定這你老婆的片？"
-
+    session.close()
 
 async def process_yt_link(msg, link):
     """
